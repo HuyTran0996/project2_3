@@ -64,6 +64,22 @@ const slice = createSlice({
 
 export default slice.reducer;
 
+/////////////////////////thunk//////////////////////////
+
+export const deletePosts =
+  ({ authorId, postId }) =>
+  async (dispatch) => {
+    dispatch(slice.actions.startLoading());
+    try {
+      await apiService.delete(`/posts/${postId}`);
+      dispatch(getPosts({ userId: authorId }));
+      toast.success("Post was deleted");
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
 export const getPosts =
   ({ userId, page = 1, limit = POSTS_PER_PAGE }) =>
   async (dispatch) => {
