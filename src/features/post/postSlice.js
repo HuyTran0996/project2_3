@@ -79,6 +79,28 @@ export const deletePosts =
       toast.error(error.message);
     }
   };
+export const editPost =
+  ({ content, image, postId, authorId }) =>
+  async (dispatch) => {
+    console.log("content in editpost:", content);
+    dispatch(slice.actions.startLoading());
+    try {
+      // upload image to cloudinary
+      const imageUrl = await cloudinaryUpload(image);
+      const response = await apiService.put(`/posts/${postId}`, {
+        content: content,
+        image: imageUrl,
+      });
+      // dispatch(getPosts({ userId: authorId }));
+      dispatch(slice.actions.createPostSuccess(response.data));
+
+      toast.success("Edited Post");
+      dispatch(getCurrentUserProfile());
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
 
 export const getPosts =
   ({ userId, page = 1, limit = POSTS_PER_PAGE }) =>

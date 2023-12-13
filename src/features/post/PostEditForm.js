@@ -6,16 +6,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { createPost } from "./postSlice";
+import { editPost } from "./postSlice";
 import { LoadingButton } from "@mui/lab";
 
 const yupSchema = Yup.object().shape({
   content: Yup.string().required("Content is required"),
 });
 
-function PostEditForm({ text, image }) {
+function PostEditForm({
+  content,
+  image,
+  postId,
+  authorId,
+  setAnchorEl,
+  setDialogEdit,
+}) {
   const defaultValues = {
-    content: text,
+    content: content,
     image: image,
   };
   const { isLoading } = useSelector((state) => state.post);
@@ -29,7 +36,10 @@ function PostEditForm({ text, image }) {
     reset,
     setValue,
     formState: { isSubmitting },
+    watch,
   } = methods;
+  const formContent = watch("content");
+  const formImage = watch("image");
   const dispatch = useDispatch();
 
   const handleDrop = useCallback(
@@ -48,8 +58,16 @@ function PostEditForm({ text, image }) {
     [setValue]
   );
 
-  const onSubmit = (data) => {
-    dispatch(createPost(data)).then(() => reset());
+  const onSubmit = () => {
+    dispatch(
+      editPost({ content: formContent, image: formImage, postId, authorId })
+    ).then(() => reset());
+    setDialogEdit(false);
+    setAnchorEl(null);
+  };
+  const handleCancelEdit = () => {
+    setDialogEdit(false);
+    setAnchorEl(null);
   };
 
   return (
@@ -85,12 +103,19 @@ function PostEditForm({ text, image }) {
             }}
           >
             <LoadingButton
-              type="submit"
+              variant="contained"
+              size="small"
+              onClick={handleCancelEdit}
+            >
+              Cancel
+            </LoadingButton>
+            <LoadingButton
+              type="submit" //handleSubmit da co o FormProvider
               variant="contained"
               size="small"
               loading={isSubmitting || isLoading}
             >
-              Post
+              Save
             </LoadingButton>
           </Box>
         </Stack>

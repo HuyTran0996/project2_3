@@ -39,17 +39,8 @@ import CommentList from "../comment/CommentList";
 import useAuth from "../../hooks/useAuth";
 import { deletePosts } from "./postSlice";
 import PostEditForm from "./PostEditForm";
-const yupSchema = Yup.object().shape({
-  content: Yup.string().required("Content is required"),
-});
-const defaultValues = {
-  content: "",
-  // image: null,
-};
 
 function PostCard({ post }) {
-  const [inputImage, setInputImage] = useState(null);
-  const [inputValue, setInputValue] = useState(post.content);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogEdit, setDialogEdit] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -58,20 +49,6 @@ function PostCard({ post }) {
   const dispatch = useDispatch();
   const { user } = useAuth();
   const currentUserId = user._id;
-
-  const { isLoading } = useSelector((state) => state.post);
-
-  const methods = useForm({
-    resolver: yupResolver(yupSchema),
-    defaultValues,
-  });
-  const {
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { isSubmitting },
-  } = methods;
-  // const updatedProfile = useSelector((state) => state.user.updatedProfile);
 
   const handlePostMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -102,24 +79,14 @@ function PostCard({ post }) {
   //////////////////////Edit form/////////////////
   const handleDialogEdit = () => {
     if (authorId === currentUserId) {
-      setInputValue(post.content);
-      setInputImage(post.image);
       setDialogEdit(true);
     } else {
       toast.error("you can only edit your posts");
     }
   };
 
-  const handleConfirmEdit = () => {
-    // dispatch(updatePost({ postId, newContent: currentContent }));
-    setDialogEdit(false);
-    setInputValue("");
-    setInputImage(null);
-  };
   const handleCancelEdit = () => {
     setDialogEdit(false);
-    setInputValue("");
-    setInputImage(null);
   };
 
   const menuId = "primary-search-account-menu";
@@ -138,7 +105,6 @@ function PostCard({ post }) {
       }}
       open={isMenuOpen}
       onClose={handlePostMenuClose}
-      loading={isSubmitting || isLoading}
     >
       <Box sx={{ display: "flex", flexDirection: "column" }}>
         <LoadingButton onClick={handleDialogEdit}>Edit Post</LoadingButton>
@@ -151,7 +117,6 @@ function PostCard({ post }) {
   return (
     <Card>
       <CardHeader
-        methods={methods}
         disableTypography
         avatar={
           <Avatar src={post?.author?.avatarUrl} alt={post?.author?.name} />
@@ -204,6 +169,7 @@ function PostCard({ post }) {
         <CommentForm postId={post._id} />
       </Stack>
       {renderMenu}
+
       {/* ///////////////Confirm pop up///////////// */}
       <Dialog open={dialogOpen} onClose={handleCancelDelete}>
         <DialogTitle>Confirm Delete</DialogTitle>
@@ -223,39 +189,15 @@ function PostCard({ post }) {
       <Dialog open={dialogEdit} onClose={handleCancelEdit}>
         <DialogTitle>Edit Post</DialogTitle>
         <DialogContent>
-          <PostEditForm text={post.content} image={post.image} />
-
-          {/* <TextField
-            autoFocus
-            margin="dense"
-            label="Edit content"
-            type="text"
-            fullWidth
-            multiline
-            value={inputValue || post.content}
-            onChange={(e) => setInputValue(e.target.value)}
+          <PostEditForm
+            content={post.content}
+            image={post.image}
+            postId={postId}
+            authorId={authorId}
+            setAnchorEl={setAnchorEl}
+            setDialogEdit={setDialogEdit}
           />
-          {post.image && (
-            <Box
-              sx={{
-                borderRadius: 2,
-                overflow: "hidden",
-                height: 300,
-                "& img": { objectFit: "cover", width: 1, height: 1 },
-              }}
-            >
-              <input
-                type="file"
-                src={inputImage || post.image}
-                onChange={(e) => setInputImage(e.target.files[0])}
-              />
-            </Box>
-          )} */}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelEdit}>Cancel</Button>
-          <Button onClick={handleConfirmEdit}>Save</Button>
-        </DialogActions>
       </Dialog>
 
       {/* /////////////////////////////////////// */}
