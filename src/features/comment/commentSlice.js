@@ -72,6 +72,25 @@ export const deleteComments =
     }
   };
 
+export const editComment =
+  ({ postId, content, commentId }) =>
+  async (dispatch) => {
+    console.log("postId slice", postId);
+    console.log("content slice", content);
+    dispatch(slice.actions.startLoading());
+    try {
+      const response = await apiService.put(`/comments/${commentId}`, {
+        content: content,
+      });
+      dispatch(slice.actions.createCommentSuccess(response.data));
+      toast.success("Edited Comment");
+      dispatch(getComments({ postId }));
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
 export const getComments =
   ({ postId, page = 1, limit = COMMENTS_PER_POST }) =>
   async (dispatch) => {
