@@ -35,7 +35,7 @@ function CommentCard({ comment }) {
     if (authorId === currentUserId) {
       setDialogOpen(true);
     } else {
-      toast.error("you can only delete your posts");
+      toast.error("you can only delete your comments");
     }
   };
   const handleConfirmDelete = () => {
@@ -50,7 +50,7 @@ function CommentCard({ comment }) {
     if (authorId === currentUserId) {
       setDialogEdit(true);
     } else {
-      toast.error("you can only edit your posts");
+      toast.error("you can only edit your comments");
     }
   };
   const handleCancelEdit = () => {
