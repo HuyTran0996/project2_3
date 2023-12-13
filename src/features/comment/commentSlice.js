@@ -56,6 +56,22 @@ const slice = createSlice({
 
 export default slice.reducer;
 
+/////////////////thunk//////////////
+export const deleteComments =
+  ({ authorId, commentId, postId }) =>
+  async (dispatch) => {
+    console.log("postId slice", postId);
+    dispatch(slice.actions.startLoading());
+    try {
+      await apiService.delete(`/comments/${commentId}`);
+      dispatch(getComments({ postId: postId }));
+      toast.success("Comment was deleted");
+    } catch (error) {
+      dispatch(slice.actions.hasError(error.message));
+      toast.error(error.message);
+    }
+  };
+
 export const getComments =
   ({ postId, page = 1, limit = COMMENTS_PER_POST }) =>
   async (dispatch) => {
