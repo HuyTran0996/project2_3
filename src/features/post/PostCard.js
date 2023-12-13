@@ -15,10 +15,11 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  TextField,
 } from "@mui/material";
 
 import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { LoadingButton } from "@mui/lab";
 
@@ -37,7 +38,7 @@ import CommentForm from "../comment/CommentForm";
 import CommentList from "../comment/CommentList";
 import useAuth from "../../hooks/useAuth";
 import { deletePosts } from "./postSlice";
-
+import PostEditForm from "./PostEditForm";
 const yupSchema = Yup.object().shape({
   content: Yup.string().required("Content is required"),
 });
@@ -47,7 +48,10 @@ const defaultValues = {
 };
 
 function PostCard({ post }) {
+  const [inputImage, setInputImage] = useState(null);
+  const [inputValue, setInputValue] = useState(post.content);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogEdit, setDialogEdit] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
   ///////////////////
@@ -78,23 +82,44 @@ function PostCard({ post }) {
 
   let postId = post._id;
   let authorId = post.author._id;
-  const handleEditPost = () => {};
-
-  const handleDeletePost = () => {
+  ////////////////Delete form////////////////////
+  const handleDialogDelete = () => {
     if (authorId === currentUserId) {
       setDialogOpen(true);
     } else {
       toast.error("you can only delete your posts");
     }
   };
-
   const handleConfirmDelete = () => {
     dispatch(deletePosts({ authorId, postId }));
     setDialogOpen(false);
   };
-
   const handleCancelDelete = () => {
     setDialogOpen(false);
+  };
+  /////////////////////////////////////////
+
+  //////////////////////Edit form/////////////////
+  const handleDialogEdit = () => {
+    if (authorId === currentUserId) {
+      setInputValue(post.content);
+      setInputImage(post.image);
+      setDialogEdit(true);
+    } else {
+      toast.error("you can only edit your posts");
+    }
+  };
+
+  const handleConfirmEdit = () => {
+    // dispatch(updatePost({ postId, newContent: currentContent }));
+    setDialogEdit(false);
+    setInputValue("");
+    setInputImage(null);
+  };
+  const handleCancelEdit = () => {
+    setDialogEdit(false);
+    setInputValue("");
+    setInputImage(null);
   };
 
   const menuId = "primary-search-account-menu";
@@ -115,11 +140,14 @@ function PostCard({ post }) {
       onClose={handlePostMenuClose}
       loading={isSubmitting || isLoading}
     >
-      {/* <MenuItem onClick={handleEditPost}>Edit Post</MenuItem> */}
-
-      <LoadingButton onClick={handleDeletePost}>Delete Post</LoadingButton>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <LoadingButton onClick={handleDialogEdit}>Edit Post</LoadingButton>
+        <LoadingButton onClick={handleDialogDelete}>Delete Post</LoadingButton>
+      </Box>
     </Menu>
   );
+
+  ///////////////////////////////
   return (
     <Card>
       <CardHeader
@@ -189,6 +217,48 @@ function PostCard({ post }) {
           <Button onClick={handleConfirmDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
+      {/* /////////////////////////////////////// */}
+
+      {/* ///////////////Edit pop up///////////// */}
+      <Dialog open={dialogEdit} onClose={handleCancelEdit}>
+        <DialogTitle>Edit Post</DialogTitle>
+        <DialogContent>
+          <PostEditForm text={post.content} image={post.image} />
+
+          {/* <TextField
+            autoFocus
+            margin="dense"
+            label="Edit content"
+            type="text"
+            fullWidth
+            multiline
+            value={inputValue || post.content}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          {post.image && (
+            <Box
+              sx={{
+                borderRadius: 2,
+                overflow: "hidden",
+                height: 300,
+                "& img": { objectFit: "cover", width: 1, height: 1 },
+              }}
+            >
+              <input
+                type="file"
+                src={inputImage || post.image}
+                onChange={(e) => setInputImage(e.target.files[0])}
+              />
+            </Box>
+          )} */}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelEdit}>Cancel</Button>
+          <Button onClick={handleConfirmEdit}>Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* /////////////////////////////////////// */}
     </Card>
   );
 }
